@@ -56,7 +56,10 @@ entity framing is
 		mii_rx_frame_i         : in  std_ulogic;
 		mii_rx_data_i          : in  t_ethernet_data;
 		mii_rx_byte_received_i : in  std_ulogic;
-		mii_rx_error_i         : in  std_ulogic
+		mii_rx_error_i         : in  std_ulogic;
+		
+		tx_sof_delim_o		   : out std_ulogic;
+		rx_sof_delim_o		   : out std_ulogic
 	);
 end entity;
 
@@ -140,7 +143,7 @@ begin
 					mii_tx_gap_o <= '0';
 					data_out     := (others => '0');
 					update_fcs   := FALSE;
-
+					tx_sof_delim_o <= '0';
 					case tx_state is
 						when TX_IDLE =>
 							-- Handled above, cannot happen here
@@ -162,6 +165,7 @@ begin
 							tx_frame_check_sequence <= (others => '1');
 							-- Load MAC address counter
 							tx_mac_address_byte     <= 0;
+							tx_sof_delim_o <= '1';
 						when TX_CLIENT_DATA_WAIT_SOURCE_ADDRESS =>
 							data_out   := tx_data_i;
 							update_fcs := TRUE;
@@ -272,7 +276,7 @@ begin
 			rx_data_o          <= mii_rx_data_i;
 			rx_byte_received_o <= '0';
 			rx_frame_o         <= '0';
-
+			rx_sof_delim_o <= '1';
 			case rx_state is
 				when RX_WAIT_START_FRAME_DELIMITER =>
 					-- Reset MAC address detection
@@ -289,6 +293,7 @@ begin
 							case mii_rx_data_i is
 								when START_FRAME_DELIMITER_DATA =>
 									rx_state <= RX_DATA;
+									rx_sof_delim_o <= '1';
 								when PREAMBLE_DATA =>
 									-- Do nothing, wait for end of preamble
 									null;
