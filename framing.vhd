@@ -276,7 +276,7 @@ begin
 			rx_data_o          <= mii_rx_data_i;
 			rx_byte_received_o <= '0';
 			rx_frame_o         <= '0';
-			rx_sof_delim_o <= '1';
+			rx_sof_delim_o <= '0';
 			case rx_state is
 				when RX_WAIT_START_FRAME_DELIMITER =>
 					-- Reset MAC address detection
