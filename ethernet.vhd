@@ -79,7 +79,9 @@ entity ethernet is
 		rx_error_o         : out   std_ulogic;
 
 		tx_sof_delim_o		   : out std_ulogic;
-		rx_sof_delim_o		   : out std_ulogic
+		rx_sof_delim_o		   : out std_ulogic;
+		tx_sof_delim_tog_o		   : out std_ulogic;
+		rx_sof_delim_tog_o		   : out std_ulogic
 	);
 end entity;
 
@@ -239,7 +241,9 @@ begin
 			mii_rx_byte_received_i => mac_rx_byte_received,
 			mii_rx_error_i         => mac_rx_error,
 			tx_sof_delim_o		   => tx_sof_delim_o,
-			rx_sof_delim_o		   => rx_sof_delim_o
+			rx_sof_delim_o		   => rx_sof_delim_o,
+			tx_sof_delim_tog_o 	   => tx_sof_delim_tog_o,
+			rx_sof_delim_tog_o 	   => rx_sof_delim_tog_o
 		);
 
 	miim_gen : if MIIM_DISABLE = FALSE generate
