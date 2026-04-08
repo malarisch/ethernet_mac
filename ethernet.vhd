@@ -46,9 +46,7 @@ entity ethernet is
 		-- GMII (Gigabit media-independent interface)
 		gmii_gtx_clk_o     : out   std_ulogic;
 
-		-- RGMII (Reduced pin count gigabit media-independent interface)
-		rgmii_tx_ctl_o     : out   std_ulogic;
-		rgmii_rx_ctl_i     : in    std_ulogic;
+
 
 		-- MII Management Interface
 		miim_clock_i       : in    std_ulogic;
