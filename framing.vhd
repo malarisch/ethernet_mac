@@ -155,14 +155,19 @@ begin
             when TX_IDLE =>
               -- Handled above, cannot happen here
               null;
-            when TX_PREAMBLE2 | TX_PREAMBLE3 | TX_PREAMBLE4 | TX_PREAMBLE5 | TX_PREAMBLE6 =>
+            when TX_PREAMBLE2 | TX_PREAMBLE3 | TX_PREAMBLE4 | TX_PREAMBLE5 =>
               tx_state <= t_tx_state'succ(tx_state);
               data_out := PREAMBLE_DATA;
+            when TX_PREAMBLE6 =>
+              tx_state <= t_tx_state'succ(tx_state);
+              data_out := PREAMBLE_DATA;
+              tx_sof_delim_o      <= '1';
+			        tx_sof_delim_tog <= not tx_sof_delim_tog;
             when TX_PREAMBLE7 =>
               tx_state <= TX_START_FRAME_DELIMITER;
               data_out := PREAMBLE_DATA;
             when TX_START_FRAME_DELIMITER =>
-              tx_state <= TX_CLIENT_DATA_WAIT_SOURCE_ADDRESS;
+              tx_state <= TX_CLIENT_DATA;
               data_out := START_FRAME_DELIMITER_DATA;
               -- Load padding register
               tx_padding_required <= MIN_FRAME_DATA_BYTES;
@@ -172,8 +177,6 @@ begin
               tx_frame_check_sequence <= (others => '1');
               -- Load MAC address counter
               tx_mac_address_byte <= 0;
-              tx_sof_delim_o      <= '1';
-			  tx_sof_delim_tog <= not tx_sof_delim_tog;
             when TX_CLIENT_DATA_WAIT_SOURCE_ADDRESS =>
               data_out   := tx_data_i;
               update_fcs := TRUE;
