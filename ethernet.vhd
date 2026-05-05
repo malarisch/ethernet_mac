@@ -79,7 +79,9 @@ entity ethernet is
 		tx_sof_delim_o		   : out std_ulogic;
 		rx_sof_delim_o		   : out std_ulogic;
 		tx_sof_delim_tog_o		   : out std_ulogic;
-		rx_sof_delim_tog_o		   : out std_ulogic
+		rx_sof_delim_tog_o		   : out std_ulogic;
+		tx_start_prefetch_o			: out std_logic;
+		tx_start_prefetch_tog_o			: out std_logic
 	);
 end entity;
 
@@ -241,7 +243,9 @@ begin
 			tx_sof_delim_o		   => tx_sof_delim_o,
 			rx_sof_delim_o		   => rx_sof_delim_o,
 			tx_sof_delim_tog_o 	   => tx_sof_delim_tog_o,
-			rx_sof_delim_tog_o 	   => rx_sof_delim_tog_o
+			rx_sof_delim_tog_o 	   => rx_sof_delim_tog_o,
+			tx_start_prefetch_o => tx_start_prefetch_o,
+			tx_start_prefetch_tog_o => tx_start_prefetch_tog_o
 		);
 
 	miim_gen : if MIIM_DISABLE = FALSE generate

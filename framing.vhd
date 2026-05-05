@@ -61,7 +61,9 @@ entity framing is
     tx_sof_delim_o     : out std_ulogic;
     rx_sof_delim_o     : out std_ulogic;
     tx_sof_delim_tog_o : out std_ulogic;
-    rx_sof_delim_tog_o : out std_ulogic
+    rx_sof_delim_tog_o : out std_ulogic;
+    tx_start_prefetch_o : out std_logic;
+    tx_start_prefetch_tog_o: out std_logic
   );
 end entity;
 
@@ -112,6 +114,7 @@ architecture rtl of framing is
   -- Toggle signals for sof delim
   signal rx_sof_delim_tog : std_ulogic;
   signal tx_sof_delim_tog : std_ulogic;
+  signal tx_start_prefetch_tog : std_logic;
 
 begin
   -- Pass mii_tx_byte_sent_i through directly as long as data is being transmitted
@@ -151,6 +154,7 @@ begin
           data_out   := (others => '0');
           update_fcs := FALSE;
           tx_sof_delim_o <= '0';
+          tx_start_prefetch_o <= '0';
           case tx_state is
             when TX_IDLE =>
               -- Handled above, cannot happen here
@@ -161,12 +165,14 @@ begin
             when TX_PREAMBLE6 =>
               tx_state <= t_tx_state'succ(tx_state);
               data_out := PREAMBLE_DATA;
-              tx_sof_delim_o      <= '1';
-			        tx_sof_delim_tog <= not tx_sof_delim_tog;
+              tx_start_prefetch_o      <= '1';
+			        tx_start_prefetch_tog <= not tx_start_prefetch_tog;
             when TX_PREAMBLE7 =>
               tx_state <= TX_START_FRAME_DELIMITER;
               data_out := PREAMBLE_DATA;
             when TX_START_FRAME_DELIMITER =>
+              tx_sof_delim_o <= '1';
+              tx_sof_delim_tog <= not rx_sof_delim_tog;
               tx_state <= TX_CLIENT_DATA;
               data_out := START_FRAME_DELIMITER_DATA;
               -- Load padding register
@@ -305,7 +311,7 @@ begin
                 when START_FRAME_DELIMITER_DATA =>
                   rx_state       <= RX_DATA;
                   rx_sof_delim_o <= '1';
-				  rx_sof_delim_tog <= not rx_sof_delim_tog;
+				          rx_sof_delim_tog <= not rx_sof_delim_tog;
                 when PREAMBLE_DATA =>
                   -- Do nothing, wait for end of preamble
                   null;
@@ -386,4 +392,5 @@ begin
   -- assign tog outputs
   rx_sof_delim_tog_o <= rx_sof_delim_tog;
   tx_sof_delim_tog_o <= tx_sof_delim_tog;
+  tx_start_prefetch_tog_o <= tx_start_prefetch_tog;
 end architecture;
