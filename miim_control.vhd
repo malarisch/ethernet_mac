@@ -20,7 +20,9 @@ entity miim_control is
 		POLL_WAIT_TICKS  : natural := DEFAULT_POLL_WAIT_TICKS;
 
 		-- Activate debug output
-		DEBUG_OUTPUT     : boolean := FALSE
+		DEBUG_OUTPUT     : boolean := FALSE;
+
+		PHY_TYPE : string := "UNKNOWN"
 
 	-- Example for Marvell PHY 88E1111 and 125 MHz MIIM clock:
 	-- RESET_WAIT_TICKS => 1250000 (10 ms at 125 MHz, minimum: 5 ms)
@@ -53,6 +55,7 @@ architecture rtl of miim_control is
 		WRITE_AUTONEG,
 		WRITE_GIGABIT_AUTONEG,
 		WRITE_SOFTRESET,
+		WRITE_LXT973_PORT_CONFIG,
 		WAIT_POLL,
 		READ_STATUS,
 		READ_SPEED_10_100,
@@ -83,7 +86,21 @@ architecture rtl of miim_control is
 		enable_collision_test    => '0',
 		unidirectional_enable    => '0'
 	);
-
+	constant lxt973_port_configuration_register_data : t_lxt973_port_configuration_register := (
+			link_test_disable => '0',
+			transmit_disable => '0',
+			bypass_scramble => '0',
+			bypass_4b5b => '0',
+			jabber => '0',
+			sqe => '0',
+			tp_loopback => '0',
+			crs_select => '1',
+			preamble_enable => '1',
+			serial_10base_t => '0',
+			far_end_fault_transmission_enable => '1',
+			alternate_np_feature => '0',
+			fiber_select => '0'
+		);
 	-- Activate only full-duplex 10/100
 	constant auto_negotiation_set_fd : t_auto_negotiation_advertisement_register_802_3 := (
 		next_page               => '0',
@@ -151,7 +168,11 @@ begin
 						if miim_ack_i = '1' then
 							miim_req_o      <= '0';
 							state           <= WAIT_ACK_LOW;
-							after_ack_state <= WRITE_GIGABIT_AUTONEG;
+							if (PHY_TYPE = "LXT973") then
+								after_ack_state <= WRITE_LXT973_PORT_CONFIG;
+							else
+								after_ack_state <= WRITE_GIGABIT_AUTONEG;
+							end if;
 						end if;
 					when WRITE_GIGABIT_AUTONEG =>
 						-- Advertise 1000 MBit full-duplex
@@ -163,6 +184,18 @@ begin
 							miim_req_o      <= '0';
 							state           <= WAIT_ACK_LOW;
 							after_ack_state <= WRITE_SOFTRESET;
+						end if;
+					when WRITE_LXT973_PORT_CONFIG =>
+						register_address <= VENDOR_SPECIFIC_REG_BASE;
+						miim_data_write_o <= lxt973_port_configuration_register_to_data(lxt973_port_configuration_register_data);
+						miim_req_o <= '1';
+						miim_we_o <= '1';
+						if (miim_ack_i = '1') then
+							miim_req_o <= '0';
+							init_done       <= TRUE;
+							state <= WAIT_ACK_LOW;
+							after_ack_state <= WAIT_POLL;
+
 						end if;
 					when WRITE_SOFTRESET =>
 						-- Reset the PHY to apply the autonegotiation values
@@ -192,7 +225,7 @@ begin
 						miim_req_o       <= '1';
 						if miim_ack_i = '1' then
 							-- Link is up when the link status indicator and auto-negotiation is OK
-							link_up_o       <= data_to_status_register(miim_data_read_i).link_status and data_to_status_register(miim_data_read_i).auto_negotiation_complete;
+							link_up_o       <= data_to_status_register(miim_data_read_i).link_status;-- and data_to_status_register(miim_data_read_i).auto_negotiation_complete;
 							miim_req_o      <= '0';
 							state           <= WAIT_ACK_LOW;
 							after_ack_state <= READ_SPEED_10_100;

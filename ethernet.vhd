@@ -18,7 +18,8 @@ entity ethernet is
 		MIIM_POLL_WAIT_TICKS  : natural       := DEFAULT_POLL_WAIT_TICKS;
 		MIIM_CLOCK_DIVIDER    : positive      := 50;
 		-- You need to supply the current speed via speed_override when MIIM is disabled
-		MIIM_DISABLE          : boolean       := FALSE
+		MIIM_DISABLE          : boolean       := FALSE;
+		PHY_TYPE : STRING := "UNKNOWN"
 	);
 	port(
 		clock_125_i        : in    std_ulogic;
@@ -271,7 +272,8 @@ begin
 			generic map(
 				RESET_WAIT_TICKS => MIIM_RESET_WAIT_TICKS,
 				POLL_WAIT_TICKS  => MIIM_POLL_WAIT_TICKS,
-				DEBUG_OUTPUT     => FALSE
+				DEBUG_OUTPUT     => FALSE,
+				PHY_TYPE =>  PHY_TYPE
 			)
 			port map(
 				reset_i                 => reset_i,

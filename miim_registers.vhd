@@ -112,6 +112,22 @@ package miim_registers is
 		lp_1000base_t_hd               : std_ulogic;
 		idle_error_count               : unsigned(7 downto 0);
 	end record;
+	
+	type t_lxt973_port_configuration_register  is record
+		link_test_disable : STD_ULOGIC;
+		transmit_disable : STD_ULOGIC;
+		bypass_scramble : STD_ULOGIC;
+		bypass_4b5b : STD_ULOGIC;
+		jabber : STD_ULOGIC;
+		sqe : STD_ULOGIC;
+		tp_loopback : STD_ULOGIC;
+		crs_select : STD_ULOGIC;
+		preamble_enable : STD_ULOGIC;
+		serial_10base_t : STD_ULOGIC;
+		far_end_fault_transmission_enable : STD_ULOGIC;
+		alternate_np_feature : STD_ULOGIC;
+		fiber_select : STD_ULOGIC;
+	end record;
 
 	constant AUTO_NEGOTATION_802_3_SELECTOR : std_ulogic_vector(4 downto 0) := "00001";
 
@@ -120,11 +136,14 @@ package miim_registers is
 	function control_register_to_data(reg : in t_control_register) return t_data;
 	function auto_negotiation_advertisement_register_802_3_to_data(reg : in t_auto_negotiation_advertisement_register_802_3) return t_data;
 	function master_slave_control_register_to_data(reg : in t_master_slave_control_register) return t_data;
+	function lxt973_port_configuration_register_to_data(reg : in t_lxt973_port_configuration_register) return t_data;
 
 	-- 16-bit data values to registers
 	function data_to_status_register(data : in t_data) return t_status_register;
 	function data_to_master_slave_status_register(data : in t_data) return t_master_slave_status_register;
 	function data_to_auto_negotiation_lp_base_page_ability_register(data : in t_data) return auto_negotiation_lp_base_page_ability_register_802_3_t;
+
+	function data_to_lxt973_port_configuration_register(data : in t_data) return t_lxt973_port_configuration_register;
 
 end package;
 
@@ -146,6 +165,27 @@ package body miim_registers is
 				5      => reg.unidirectional_enable,
 				others => '0'
 			);
+		return data;
+	end function;
+	function lxt973_port_configuration_register_to_data(reg: in t_lxt973_port_configuration_register) return t_data is
+		variable data : t_data;
+	begin
+		data := (
+			14 => reg.link_test_disable,
+			13 => reg.transmit_disable,
+			12 => reg.bypass_scramble,
+			11 => reg.bypass_4b5b,
+			10 => reg.jabber,
+			9 => reg.sqe,
+			8 => reg.tp_loopback,
+			7 => reg.crs_select,
+			5 => reg.preamble_enable,
+			3 => reg.serial_10base_t,
+			2 => reg.far_end_fault_transmission_enable,
+			1 => reg.alternate_np_feature,
+			0 => reg.fiber_select,
+			others => '0'
+		);
 		return data;
 	end function;
 
@@ -205,6 +245,27 @@ package body miim_registers is
 				jabber_detect             => data(1),
 				extended_capability       => data(0)
 			);
+		return status;
+	end function;
+
+	function data_to_lxt973_port_configuration_register(data : in t_data) return t_lxt973_port_configuration_register is
+		variable status : t_lxt973_port_configuration_register;
+	begin
+		status := (
+			link_test_disable => data(14),
+			transmit_disable => data(13),
+			bypass_scramble => data(12),
+			bypass_4b5b => data(11),
+			jabber => data(10),
+			sqe => data(9),
+			tp_loopback => data(8),
+			crs_select => data(7),
+			preamble_enable => data(5),
+			serial_10base_t => data(3),
+			far_end_fault_transmission_enable => data(2),
+			alternate_np_feature => data(1),
+			fiber_select => data(0)
+		);
 		return status;
 	end function;
 
