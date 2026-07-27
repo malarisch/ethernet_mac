@@ -10,7 +10,7 @@ use ieee.numeric_std.all;
 use work.ethernet_types.all;
 use work.miim_types.all;
 use work.miim_registers.all;
-
+use work.system_cfg_pkg.all;
 entity miim_control is
 	generic(
 		-- Ticks to wait before writing any registers after reset low
@@ -22,7 +22,7 @@ entity miim_control is
 		-- Activate debug output
 		DEBUG_OUTPUT     : boolean := FALSE;
 
-		PHY_TYPE : string := "UNKNOWN"
+		PHY_TYPE : t_phy_names := OTHER
 
 	-- Example for Marvell PHY 88E1111 and 125 MHz MIIM clock:
 	-- RESET_WAIT_TICKS => 1250000 (10 ms at 125 MHz, minimum: 5 ms)
@@ -168,7 +168,7 @@ begin
 						if miim_ack_i = '1' then
 							miim_req_o      <= '0';
 							state           <= WAIT_ACK_LOW;
-							if (PHY_TYPE = "LXT973") then
+							if (PHY_TYPE = LXT973) then
 								after_ack_state <= WRITE_LXT973_PORT_CONFIG;
 							else
 								after_ack_state <= WRITE_GIGABIT_AUTONEG;

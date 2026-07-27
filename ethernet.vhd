@@ -10,6 +10,7 @@ use ieee.std_logic_1164.all;
 
 use work.ethernet_types.all;
 use work.miim_types.all;
+use work.system_cfg_pkg.all;
 
 entity ethernet is
 	generic(
@@ -19,7 +20,7 @@ entity ethernet is
 		MIIM_CLOCK_DIVIDER    : positive      := 50;
 		-- You need to supply the current speed via speed_override when MIIM is disabled
 		MIIM_DISABLE          : boolean       := FALSE;
-		PHY_TYPE : STRING := "UNKNOWN"
+		PHY_TYPE : t_phy_names := OTHER
 	);
 	port(
 		clock_125_i        : in    std_ulogic;
